@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 func check(e error) {
@@ -19,6 +20,13 @@ func login(w http.ResponseWriter, req *http.Request) {
 	dat, err := ioutil.ReadFile("www/login.html")
 	check(err)
 	fmt.Fprintf(w, string(dat))
+	if v := req.Method; v == http.MethodPost {
+		fmt.Fprintf(w, "Post recieved")
+		req.ParseForm()
+		for k, v := range req.Form {
+			fmt.Println(k + strings.Join(v, "\n"))
+		}
+	}
 }
 
 func main() {

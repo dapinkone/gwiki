@@ -5,19 +5,20 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"io/ioutil"
-	"io"
+	"net/http"
 )
+
 func check(e error) {
-	if e != nil { panic(e) }
+	if e != nil {
+		panic(e)
+	}
 }
 
-
 func login(w http.ResponseWriter, req *http.Request) {
-	dat, err f := openFile("www/login.html")
-	defer closeFile(f)
-	fmt.Fprintf(w, f.)
+	dat, err := ioutil.ReadFile("www/login.html")
+	check(err)
+	fmt.Fprintf(w, string(dat))
 }
 
 func main() {

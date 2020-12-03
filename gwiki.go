@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	//	"strings"
+	"strings"
 )
 
 func check(e error) {
@@ -17,6 +17,7 @@ func check(e error) {
 }
 
 func login(w http.ResponseWriter, req *http.Request) {
+	// TODO: generate and store sessionids?
 	dat, err := ioutil.ReadFile("www/login.html")
 	check(err)
 	fmt.Fprintf(w, string(dat))
@@ -33,8 +34,13 @@ func login(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 }
+func sanitizeFormData(s string) string {
+	// TODO: test this for edge cases.
+	res := strings.Replace(s, ".", "", -1)
+	return strings.Replace(res, "/", "", -1)
+}
+
 func serverFactory(filename string) func(http.ResponseWriter, *http.Request) {
-	// WARN NOTE: 2020-12-02: dapinkone: filename needs to be sanitized.
 	return func(w http.ResponseWriter, req *http.Request) {
 		dat, err := ioutil.ReadFile("www" + filename)
 		check(err)
@@ -43,18 +49,24 @@ func serverFactory(filename string) func(http.ResponseWriter, *http.Request) {
 }
 
 func view(w http.ResponseWriter, req *http.Request) {
-	v := req.Method;
+	v := req.Method
 	if v == http.MethodGet {
 		req.ParseForm()
-		fmt.Fprintf(w, "viewing %v<br />\n", req.Form["page"])
-		pageid := req.Form["page"]
-		// TODO: sanitize pageid
+						// TODO: sanitize pageid
+		pageid := sanitizeFormData(req.Form["page"][0])
 
-		// TODO: check for existance of file
+		fmt.Fprintf(w, "viewing %v<br />\n", pageid)
 
+
+		// TODO: future feature: store pages in a databse.
 		// TODO: read file if exists. otherwise, provide option to edit/create.
+		dat, err := ioutil.ReadFile("www/pgs/" + pageid)
+		if err != nil { // TODO: redirect to edit page
+			fmt.Fprintf(w, "not found")
 
-
+		} else {
+			fmt.Fprintf(w, string(dat))
+		}
 	} // Else?
 }
 

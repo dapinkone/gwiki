@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
+	//	"time"
 )
 
 func check(e error) {
@@ -76,7 +76,8 @@ func logRequestHandler(handler http.Handler) http.Handler {
 		// call the original http.Handler we're wrapping
 		handler.ServeHTTP(w, r)
 		// basic logging
-		log.Printf("[%s] %s - %s: %s", time.Now().Format("2006-01-02T15:04:05-0700"), r.RemoteAddr, r.Method, r.URL.String())
+		log.Printf("%s - %s: %s", r.RemoteAddr, r.Method, r.URL.String())
+
 	})
 }
 

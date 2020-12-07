@@ -6,8 +6,10 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func check(e error) {
@@ -52,11 +54,10 @@ func view(w http.ResponseWriter, req *http.Request) {
 	v := req.Method
 	if v == http.MethodGet {
 		req.ParseForm()
-						// TODO: sanitize pageid
+		// TODO: sanitize pageid
 		pageid := sanitizeFormData(req.Form["page"][0])
 
 		fmt.Fprintf(w, "viewing %v<br />\n", pageid)
-
 
 		// TODO: future feature: store pages in a databse.
 		// TODO: read file if exists. otherwise, provide option to edit/create.
@@ -70,10 +71,19 @@ func view(w http.ResponseWriter, req *http.Request) {
 	} // Else?
 }
 
+func logRequestHandler(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// call the original http.Handler we're wrapping
+		handler.ServeHTTP(w, r)
+		// basic logging
+		log.Printf("[%s] %s - %s: %s", time.Now().Format("2006-01-02T15:04:05-0700"), r.RemoteAddr, r.Method, r.URL.String())
+	})
+}
+
 func main() {
 	http.HandleFunc("/", serverFactory("/index.html"))
 	http.HandleFunc("/view", view)
 	http.HandleFunc("/style.css", serverFactory("/style.css"))
 	http.HandleFunc("/login", login)
-	http.ListenAndServe(":8090", nil)
+	http.ListenAndServe(":8090", logRequestHandler(http.DefaultServeMux))
 }
